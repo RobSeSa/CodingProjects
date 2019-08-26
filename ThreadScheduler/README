@@ -1,0 +1,59 @@
+Assignment 2 for CMPS 111
+Group: Robert Sato Pranav Nampoothiri Keerthi Krishnan
+cruzid: rssato pnampoot kvkrishn
+sid: 1517254 1530280 1526350
+Team Leader: Robert Sato
+v5.5.19.21:22
+
+Description:  This program implements 4 different scheduling algorithms.
+
+Directions: How to compile and run...
+	After executing these commands, output from the benchmark program is 
+	stored in data_benchmark.
+
+Case 1: FIFO queues with priority run queue selection.
+	$ make build-1
+	**restart computer
+	$ cd ./benchmarks/
+	$ make run
+		- output is stored in benchData.txt and spookData.txt
+	(optional)
+	$ make collect-1
+		- runs benchmarks multiple times and then stores data in /data
+
+Case 2: Priority queues with priority run queue selection.
+	$ make build-2
+	**restart computer
+	$ cd ./benchmarks/
+	$ make run
+	(optional)
+	$ make collect-2
+
+Case 3: FIFO queues with splatter run queue selection.
+	$ make build-3
+	**restart computer
+	$ cd ./benchmarks/
+	$ make run
+	(optional)
+	$ make collect-3
+
+Case 4: Priority queues with splatter run queue selection.
+	$ make build-4
+	**restart computer
+	$ cd ./benchmarks/
+	$ make run
+	(optional)
+	$ make collect-4
+
+Implementation:
+FIFO -> priority : Changes were made to the runq_add function and the runq_add_pri function. Threads are
+	always popped off from the head so we ordered the run queues to
+	always store the lowest td->priority (highest priority) threads at
+	the head of the queue.  ***pls talk about this in the design doc***
+
+priority -> splatter : Changes were made to the tdq_runq_add function in sched_ule.c to randomize the priorities 
+		of the threads in order to implement splatter scheduling.
+		We used the random number generator present in the sched_ule.c
+		to randomize priorities. 
+
+extensive description of changes in design doc

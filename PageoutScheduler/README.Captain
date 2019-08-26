@@ -1,0 +1,101 @@
+Assignment 2 for CMPS 111
+Group: Robert Sato Pranav Nampoothiri Keerthi Krishnan
+cruzid: rssato pnampoot kvkrishn
+sid: 1517254 1530280 1526350
+Team Leader: Robert Sato
+v5.18.19.16:45
+
+Contributions:  I implemented the changes to the .c files.  I wrote the perl script for 
+   collecting data.  I wrote the Makefile for moving files and outputting the perl script's
+   data into a file. I would give both of my team mates a 4/5 as they were an integral part
+   of coming up with our changes to make, evaluating the data and forming the writeup.
+
+Description: Here we are rewriting some files that manage the virtual
+memory paging in FreeBSD.  
+
+Directions: How to compile and run...
+   $ make build   # builds the kernel with our new files
+   RESTART COMPUTER
+   $ make test    # runs perl script that gets data
+                  # stress tester is then run
+                  # perl script run again to get data after
+                  # data is stored in data.txt
+   (optional)
+   $ make rebuild # rebuilds the kernel with the unmodified files
+   RESTART COMPUTER
+   (if comparing with old data.txt rename it first)
+   $ make test    # get data again to compare
+   (if you want to read the descsriptions)
+   $ make data    # runs perl script with -v flag
+                  # -v = verbose; prints data with descriptions
+
+Assignment Specifications:
+1. Do not put inactive and invalid pages on the front of the free list
+   if page number is even
+      put on the front of the free list
+   if page number is odd
+      put at the rear of the free list
+2. Do not set the activity count to 5
+   assign it a random value from 1-32
+   this should be done when pages first become active
+3. Do not subtract from the activity count
+   divide it by 2 and subtract 1
+   move it to the front of the active list NOT THE REAR
+4. When you move a page to the inactive list, choose a random number
+   r from 1-10
+   if r > 7
+      page goes on the front of the inactive list
+   else
+      page goes on the rear of the inactive list
+5. Run pageout more frequently
+
+Assignment Spec Implementation: 
+(file to modify name, function name, variable name)
+
+1. vm_phys.c, vm_freelist_add, int tail
+   vm_page_t->phys_addr gives physical address of the page including offset
+   shift right number of offset bits
+   and it with 1
+   if true
+      put at rear
+   else false
+      put at front
+2. vm_page.c, vm_page_activate (line 3411), m->act_count stores activity count
+   change the value assigned to m->act_count to random 1-32 
+3. vm_pageout.c, vm_pageout_scan_active (line 1142),
+   line 1256 change the else so that subtracting is changed to divide by 2 subtract 1
+   line 1302 change TAILQ_INSERT_AFTER to TAILQ_INSERT_HEAD if subtracted
+4. vm_pageout.c, vm_pageout_scan_active (line 1142)
+   set a flag if we have an inactive page
+   do that random > 7 test and see if we should put on the front or the rear
+5. vm_pageout.c, line 148 VM_INACT_SCAN_RATE
+   change the scan rate to something shorter so we can see the impact of changes
+
+Expected Statistics (Evan West):
+1 Number of pages in each queue
+2 Which queues were scanned in this run
+3 For each queue the number of pages moved to higher queues and number to lower queues
+4 Total number of pages scanned
+5 Number of pages freed
+6 Number of pages moved from ACTIVE -> INACTIVE
+7 Number of pages moved from INACTIVE -> Cache/Free
+
+Expected Statistics Implementation:
+1. use sysctl: vm.v_free_count, vm.v_active_count, vm.v_inactive_count
+2. 
+3. higher = active, lower = inactive, create counter in vm_page_deactivate and in vm_page activate to figure out 
+   movement from higher to lower queues and lower to higher queues respectively, print using SYSCTL_INT.
+4. create counter in vm_pageout_init_scan and print that counter using SYSCTL_INT
+5. use sysctl; vm.stats.vm.v_free_count: 
+6. use sysctl; vm.stats.vm.v_active_count: check before and after and compare to inactive
+7. use sysctl; vm.stats.vm.v_inactive_count: same as 6 except for inactive and cache/free
+
+To Do:
+1. (W 5/15) locate everything we need to change in ^ Assignment Spec Implementation
+2. (W 5/15) try out the random number generator on piazza
+3. (W 5/15 - Th 5/16) write benchmark code that meets the Expected Statistics
+4. (F 5/17) make changes using Assignment Spec Implementation
+5. (F 5/17) run benchmarks on it
+6. (F 5/17) write a Makefile that makes this stuff automatic
+7. (Sat 5/18) write a DESIGN doc
+8. (Sat 5/18) refer to assignment pdf for submitting deliverables

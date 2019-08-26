@@ -1,0 +1,31 @@
+Name: Pranav Nampoothiri
+CruzID: pnampoot
+Group Name: Schedulers
+Assignment 4: Cryptographic File System
+Due Date: June 02, 2019
+
+Contributions:
+I struggled throughout this assignment to effectively contribute in accomplishing the different tasks for this assignment.
+ 
+I had a tough time understanding how the different assignment specifications work together, and unfortunately, was playing
+the catch-up game in getting up to speed with understanding our tasks, hindering the progress and our ultimate results.
+A big part of the reason was that I had a difficult time working around a fairly sporadic schedule over the past 2 weeks, 
+and fell behind because so.
+
+Our team captain, Robert, did a majority of the implementation, and again did a great job leading the project regardless of our 
+struggles. Our other group mate, Keerthi, handled the syscall implementation, and did a great job getting most of the syscall
+functional. He also assisted with writing our final WRITEUP, and wrote a significant portion of the Design Document. 
+
+My main contributions to this assignment, were writing a significant portion of our final WRITEUP, assisting Keerthi with the 
+Design Document, and giving assistance to debugging our system call implementation.
+
+I attempted to handle our FUSE implementation, and got it started with the installation process and some scouring of resources,
+to determine where we would implement our file system layer, but ultimately my efforts in implementation were limited to
+virtually nothing, because of my issues in understanding the task and how it relates to the other tasks. This was an issue on
+my part along with a lack of proactiveness in experimenting and going through a meaningful trial and error process, a result that
+went in conjunction to bad time management on my part through this time span.
+
+Robert took the charge in implementing our file system layer within which encryption and decryption was enabled with the read 
+and write system calls, along with the protectfile.
+
+In the end I learned quite a bit from this assignment, unfortunately in a negative fashion, and thus inhibiting our results.
