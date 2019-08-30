@@ -1,0 +1,70 @@
+Assignment 4 for CMPS 111
+Group: Robert Sato, Pranav Nampoothiri, Keerthi Krishnan
+cruzid: rssato pnampoot kvkrishn
+sid: 1517254 1530280 1526350
+Team Leader: Robert Sato
+v5.18.19.16:45
+
+Contributions:  
+   I wrote almost all of the code for this assignment.  I completed protectfile.c on my own
+and went on to write the code for the stackable virtual file system layer.  This
+included the changes to xmp_read(), xmp_write(), test_read() which tests that the
+virtual file system is working, cryptoFS, and the Makefile which moves files, mounts the
+vfs, and compiles all of our test files.
+
+Teammate contributions:
+   My teammates did not come through with their portions of the assignment. I was assigned
+the protectfile, Pranav was assigned working with FUSE and modifying the read/write, and Keerthi
+was assigned to setkey syscall. Pranav fell behind on his work and I had to do all of the
+work with FUSE modifying the read/write along with my protectfile program.  Keerthi
+managed to get the syscall but we did not have time to implement it.  They did write the
+entirety of the DESIGN.pdf and WRITEUP.pdf but I felt overwhelmed with doing almost all of the
+coding in this assignment.  I would give a 1/5 to Pranav and 2/5 to Keerthi as they both
+put effort in and worked on this assignment but could not pull their weight in the group.
+
+Specifications:
+   We were unable to complete the setkey syscall so the keys are always set
+to "d34db00f" Using a different key will result in garbled nonsense unless you
+manually use protectfile to encrypt and decrypt with the same key.
+
+Description: 
+   In this assignment we add a layer to the stackable virtual file system.
+This was done using FUSE and I implemented two syscalls of indirection; read
+and write. Before writing, we encrypt in 16 byte chunks using AES 128 Speck.
+After reading, we decrypt in 16 byte chunks using the same algorithm as the
+function is XOR.
+   I also wrote a stand alone program, protectfile, that manually encrypts files.
+This program takes in the mode, a key, and the file. Upon completion, the sticky
+bit is set accordingly and the file is properly encrypted or decrypted. Run this
+file with the -d flag at the end of the command to run in debug mode.
+
+
+Directions: How to compile and run...
+   $ make final   
+   - NOTE: if the FUSE module is already loaded,
+           run '$ make refinal' instead
+	# cleans the directory with make spotless
+	# creates some example files to run tests on (test.txt output.txt)
+	# encrypts one of the files "make e"
+   - a file system directory names 'mountdir' has been created and mounted
+   - this file system copied your root directory and should have all of the same files
+   - cd into ./mountdir/ and navigate into the directory you are in right now
+   - from this directory, run
+   $ make test
+	# this command runs cat on the test.txt and output.txt files
+	# it does this with the sticky bit on and off to elucidate the fact that
+	# the file is encrypted/decrypted
+   (optional)
+   $ make test-protect
+	# cat the initial contents of test.txt
+	# encrypt and then cat again
+	# decrypt and then cat again
+   $ make e
+	# encrypts the test.txt file in debug mode
+   $ make d
+	# decrypts the test.txt file in debug mode
+   $ make read
+	# tests the read/write commands and produces output.txt
+	# output.txt must already exist
+   $ make remake
+	# remakes the test.txt file in cases of encryption/decryption nonsense

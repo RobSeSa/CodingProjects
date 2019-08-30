@@ -1,0 +1,47 @@
+Assignment 1 for CMPS 111 by Robert Sato
+Due April 21, 2019
+cruzid: rssato
+sid: 1517254
+
+Infer Complaints: Run infer using "make infer" call "make infer-mac" for macOS.
+Complains due to the lex.yy.c file.
+
+Description: This program emulates a typical shell. Processes are forked off and execute
+commands using execvp.
+
+Local Directory: /Users/robertsato/Desktop/UC Santa Cruz/Spring 2019/CMPS 111
+
+Directions: Compile using "make" on most OS.  Compile using "make mac" on a MacOS due to
+the renaming of the flex library needed for the string parser used. Run using "make run"
+or simple execute the ./myshell executable. Type "exit" and press return to exit myshell.
+
+Overview: Main has an infinite while loop that prompts the user for input, parses the input
+using lex.l, and calls the handler to handle and call appropriate execute functions on the
+inputted line.
+
+handler()
+The handler rearranges the input string, which has been formatted as an array of strings
+by lex.l, such that file redirection, file names, and special characters are not included
+in the temporary array of strings passed to the execute function.
+
+execute()
+The execute function is called when there are no pipes and a single command with/without
+arguments is to be executed.  This occurs when the return character is entered for single
+commands and when the ";" special character is used to delimit commands.  This function 
+forks off a process and calls execvp to replace
+its core image with the desired command.
+
+executePipes()
+When a pipe | special character is found, all of the commands to be piped are stored in the
+temporary array of strings separated by NULL characters.  A second array, along with a 
+counter for that array, stores the indices, and number, of commands that are present in
+the temporary array.  This information is passed to the executePipes function along with
+information about input file, output file, append mode and number of pipes.
+
+Other helper functions were defined for the sake of ease.
+
+Design Decisions: A temporary array is created and passed when executing commands. A 
+counter accounts for if there are more commands to be executed. Execute is called for
+all single commands and executePipes is called for all piped commands.
+
+See DESIGN.pdf for details with pseudocode.

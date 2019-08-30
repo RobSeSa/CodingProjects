@@ -1,0 +1,14 @@
+My contributions to this project involved being part of the group effort, to figure out where we were going to code up all our implementations
+through the different functions in the different source files, as well as how. I did this through discussions and reviewing our initial attempts
+at the implementations. I coded up a part of the implementation to add pages to the free list, under the specifications of the Bon Chance algorithm.
+I assisted in figuring out how to use the sysctl system call, and determine how we were going to gather our performance data. I wrote a
+significant portion of the WRITEUP.pdf, and helped gather the data and average it out, to have better accuracy and make the data more presentable.
+I put together a notable portion of the benchmark descriptions of our visuals and the analysis of it. 
+
+My teammates did a great job of coming to meetings, working around schedules, and making this a learning process. Our captain wrote a solid schedule
+of when to get different parts of the assignment done, as well largely contribute towards many of the implementations, and figuring out process; he
+created the Makefile and organized the automation of our test runs and stress tester. Keerthi, my other teammate did a great job in also largely
+contributing to the implementation process, and coded up some of the implementations as well. He assisted me in writing the WRITEUP.pdf and putting
+it together, while also creating our visuals for benchmarks. He also put together a significant portion of the benchmark descriptions of our visuals
+and the analysis of it. Overall this was another great effort by our group. 
+

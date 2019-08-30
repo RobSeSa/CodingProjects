@@ -1,0 +1,17 @@
+Name: Keerthi Krishnan
+Group Name: Schedulers 
+Assignment 4: Cryptographic File System 
+cruzid: kvkrishn 
+
+Contributions: This assignment was very challenging to understand, however we were able to finish most of it. I predominantly
+worked on the syscall function setkey. I implemented an array of structs to keep track of both userid and its corresponding key. In 
+the actual function, I added code to create the key and attach it with the userid specified. I also made sure to add the syscall to 
+the lookup table as well as add the necessary structs to sysproto.h. I also tried to implement another syscall, getkey, to retrieve 
+the key corresponding to a userid. I got some assistance from my partner Pranav in debugging. I also helped create the writeup.pdf and 
+design doc as well. This project really taught me to mess with the kernel and the interaction between user and kernel space. 
+
+Ratings: Overall, these past 2 weeks, we barely had time to meet up and it was very busy, but I would like to thank our team captain
+Robert Sato for implementing a majority of the code as well as helping us understand what was asked for this assignment. He was a guiding
+light in terms of helping us understand what exactly the assignment was asking for and delegated certain parts for all of us to do. Without 
+him, not only would we be struggling to finish the assignment, but also would have a tough time clarifying the concepts involved in the assignment 
+as well. 
