@@ -114,7 +114,7 @@ void ll_node_print(ListNode *n) {
     printf("%c", (char)n->word[i]);
   }
 
-  printf("\": %lld\n", n->code_num);
+  printf("\": %ld\n", n->code_num);
 }
 
 //
