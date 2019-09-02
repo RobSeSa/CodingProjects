@@ -1,4 +1,7 @@
 #include <inttypes.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
 #include "trie.h"
 
 /*struct TrieNode {
@@ -10,8 +13,8 @@
 TrieNode *trie_node_create(uint8_t sym, uint64_t code_num) {
    TrieNode *tn = malloc(sizeof(TrieNode));
    assert(tn);
-   TrieNode->code_num = code_num;
-   TrieNode->sym = sym;
+   tn->code_num = code_num;
+   tn->sym = sym;
    return tn;
 }
 
@@ -20,7 +23,7 @@ void trie_node_delete(TrieNode *n) {
 }
 
 TrieNode *trie_create() {
-   TrieNode *tn = trie_node_create(NULL, NULL); //root
+   TrieNode *tn = trie_node_create(0, 0); //root
    int i;
    for(i = 0; i < 256; i++) {
       tn->children[i] = trie_node_create(i, i);
@@ -40,7 +43,25 @@ void trie_delete(TrieNode *n) {
    //child should delete self and return if all children are now null
    trie_node_delete(n);
 }
-/*
-TrieNode *trie_step(TrieNode *n, uint8_t sym);
-void trie_node_print(TrieNode *n);
-void trie_print(TrieNode *root, int depth);
+TrieNode *trie_step(TrieNode *n, uint8_t sym) {
+   if(n->children[sym] != NULL) { return n->children[sym]; }
+   else { return NULL; }
+}
+void trie_node_print(TrieNode *n) {
+   if((n->sym >= 32) && (n->sym <= 126)) { printf("(%c)", n->sym); }
+   printf("%u,%lu", n->sym, n->code_num);
+   
+}
+void trie_print(TrieNode *root, int depth) {
+   //print self
+   if(depth == 0) { printf("Printing Trie... (depth):(symbol),(code)\n"); }
+   printf("%d:", depth);
+   trie_node_print(root);
+   printf("; ");
+   int i;
+   for(i = 0; i < 256; i++) {
+      if(root->children[i] != NULL) {
+         trie_print(root->children[i], depth + 1);
+      }
+   }
+}

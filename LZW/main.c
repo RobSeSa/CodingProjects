@@ -2,6 +2,7 @@
 
 #include "ll.h"
 #include "bv.h"
+#include "trie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -32,21 +33,34 @@ int main() {
    printf("Deleting the bv\n");
    bv_delete(bv);
 */
-   BitVector *codebv = code_num_to_bv(5, 9);
+   //More BitVector testing
+/*   BitVector *codebv = code_num_to_bv(5, 9);
    printf("contents of codebv(printed from LSB in bv->vector): ");
    bv_print(codebv);
    printf("\n");
    BitVector *temp = codebv;
-   uint64_t code;
+   uint64_t code = 0;
+   //infer says codebv unreachable after this point
    code = bv_to_code_num(codebv);
+   printf("codebv->length = %u\n", codebv->length);
    printf("code = %lu\n", code);
    bv_delete(temp);
-
-   //bit operation testing
-/*   printf("\nTesting bit operations\n");
-   printf("1UL = %lu\n", 1UL);
-   printf("1UL << 1 = %lu\n", (1UL << 1));
-   printf("1U = %u\n", 1U);
 */
+   //TrieNode testing
+   TrieNode *tn = trie_create();
+   TrieNode *root = tn;
+   printf("tn->sym = %u\ntn->code_num = %lu\n", tn->sym, tn->code_num);
+   trie_print(tn, 0);
+   printf("\nStepping through the tree\n");
+   char *word = "word";
+   int i = 0;
+   while(tn != NULL) {
+      trie_node_print(tn);
+      printf("\n");
+      printf("word[i] = %u\n", (uint8_t)word[i]);
+      tn = trie_step(tn, (uint8_t)word[i]);
+      i++;
+   }
+   trie_delete(root);
    return 0;
 }
