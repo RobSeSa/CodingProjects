@@ -32,7 +32,9 @@ char *code_num_to_key(uint64_t code_num);
 // ht:     The hash table containing the salt for hashing.
 // key:    The key to hash.
 //
-uint32_t hash(HashTable *ht, char *key);
+uint64_t hash(HashTable *ht, uint64_t key);
+// changed this from char *key to uint64_t
+// also changed uint32_t hash to uint64_t
 
 //
 // Creates a new hash table of specified length with a preset salt.

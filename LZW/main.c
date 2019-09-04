@@ -3,6 +3,8 @@
 #include "ll.h"
 #include "bv.h"
 #include "trie.h"
+#include "io.h"
+#include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -47,7 +49,7 @@ int main() {
    bv_delete(temp);
 */
    //TrieNode testing
-   TrieNode *tn = trie_create();
+/*   TrieNode *tn = trie_create();
    TrieNode *root = tn;
    printf("tn->sym = %u\ntn->code_num = %lu\n", tn->sym, tn->code_num);
    trie_print(tn, 0);
@@ -62,5 +64,23 @@ int main() {
       i++;
    }
    trie_delete(root);
+*/
+   //hashTable.h testing
+   HashTable *ht = ht_create(500);
+   ht_print(ht);
+   uint64_t code_num = 256;
+   //printf("hash(ht, 256) = %lu\n", hash(ht, 256));
+   if(ht_lookup(ht, code_num) != NULL) {
+      printf("found!\n");
+   }
+   else { printf("not found :/\n"); }
+   uint8_t *word = (uint8_t*)"word";
+   printf("adding %lu, %s...\n", code_num, word);
+   ht_add(ht, code_num, word, 4);
+   if(ht_lookup(ht, code_num) != NULL) {
+      printf("found!\n");
+   }
+   else { printf("not found :/\n"); }
+   ht_delete(ht);
    return 0;
 }

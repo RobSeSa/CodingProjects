@@ -4,12 +4,6 @@
 #include <stdlib.h>
 #include "trie.h"
 
-/*struct TrieNode {
-  TrieNode *children[256];
-  uint64_t code_num;
-  uint8_t sym;
-};*/
-
 TrieNode *trie_node_create(uint8_t sym, uint64_t code_num) {
    TrieNode *tn = malloc(sizeof(TrieNode));
    assert(tn);
