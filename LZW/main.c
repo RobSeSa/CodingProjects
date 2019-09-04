@@ -45,6 +45,11 @@ int main(int argc, char **argv) {
             outputFile = optarg;
             if(inputFd != 0) {
                outputFd = open(outputFile, O_WRONLY | O_CREAT, fileStat.st_mode);
+               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
+            }
+            else {
+               outputFd = open(outputFile, O_WRONLY | O_CREAT);
+               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
             }
             break;
          default:
@@ -71,6 +76,12 @@ int main(int argc, char **argv) {
          printf("\n");
       }
    }
+
+   FileHeader *fh = file_header_create(MAGIC, 1000, fileStat.st_mode, 0);
+   //writing to input to check if we can read it back
+   write_header(outputFd, fh);
+   write(outputFd, "output", 6);
+   read_header(inputFd, fh);
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }

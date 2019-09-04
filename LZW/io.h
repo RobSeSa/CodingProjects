@@ -27,6 +27,9 @@ typedef struct FileHeader {
   uint16_t padding;
 } FileHeader;
 
+FileHeader *file_header_create(uint32_t magic, uint64_t file_size, 
+                               uint16_t protection, uint16_t padding);
+
 //
 // Reads a file header from the input file.
 //
