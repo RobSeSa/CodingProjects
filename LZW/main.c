@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 int main(int argc, char **argv) {
-   printf("This is the main function of LZW\n");
+   printf("\nThis is the main function of LZW\n");
    int vflag = 0, cflag = 0, dflag = 0, iflag = 0, oflag = 0;
    char *inputFile = NULL;
    int inputFd = 0, outputFd = 1;
@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
             iflag = 1;
             inputFile = optarg;
             inputFd = open(inputFile, O_RDONLY);
+            //get stats for input file
             if(stat(inputFile, &fileStat) < 0) { return 1; }
             break;
          case 'o':
@@ -52,6 +53,23 @@ int main(int argc, char **argv) {
                if(outputFd == -1) { printf("error opening %s\n", outputFile); }
             }
             break;
+/*
+         case 'x':
+            outputFile = optarg;
+            if(inputFd != 0) {
+               outputFd = open(outputFile, O_WRONLY | O_CREAT, fileStat.st_mode);
+               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
+            }
+            else {
+               outputFd = open(outputFile, O_WRONLY | O_CREAT);
+               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
+            }
+            FileHeader *fh = file_header_create(MAGIC, fileStat.st_size, 
+                                                fileStat.st_mode, 0x0000);
+            printf("Writing header from %s to %s\n", outputFile, inputFile);
+            write_header(outputFd, fh);
+            return 0;
+*/
          default:
             printf("Usage: ./lzwcoder -vcdi:o:\n");
             break;
@@ -61,6 +79,7 @@ int main(int argc, char **argv) {
       printf("vflag = %d, cflag = %d, dflag = %d, iflag = %d, oflag = %d\n",
              vflag, cflag, dflag, iflag, oflag);
       printf("inputfile = %s, outputFile = %s\n", inputFile, outputFile);
+      printf("%s file size = %lu\n", inputFile, fileStat.st_size);
       if(iflag) {
          printf("File Permissions for %s:", inputFile);
          printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
@@ -76,12 +95,15 @@ int main(int argc, char **argv) {
          printf("\n");
       }
    }
-
-   FileHeader *fh = file_header_create(MAGIC, 1000, fileStat.st_mode, 0);
-   //writing to input to check if we can read it back
+   FileHeader *fh = file_header_create(MAGIC, fileStat.st_size, fileStat.st_mode, 0x0000);
    write_header(outputFd, fh);
-   write(outputFd, "output", 6);
    read_header(inputFd, fh);
+/*
+   FileHeader *fh = file_header_create(MAGIC, 16, 33188, 0x0000);
+   write_header(outputFd, fh);
+   */
+   free(fh);
+
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }

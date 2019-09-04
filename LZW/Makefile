@@ -33,7 +33,7 @@ infer: spotless
 debug_test: all
 	./lzwcoder -v -c -i test.txt -o test.zipped
 	./lzwcoder -v -d -i test.zipped -o test.unzipped
-	@diff test.txt test.unzipped
+	@diff test.txt test.unzipped -s
 
 git-% :
 	git add ${SOURCES} ${HEADERS} Makefile

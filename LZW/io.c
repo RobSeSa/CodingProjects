@@ -1,10 +1,12 @@
 #include "bv.h"
 #include "io.h"
+#include "endian.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 FileHeader *file_header_create(uint32_t magic, uint64_t file_size,
                                uint16_t protection, uint16_t padding) {
@@ -24,6 +26,10 @@ void read_header(int infile, FileHeader *header) {
       printf("error reading magic number\n");
       //return;
    }
+   if(header->magic != MAGIC) {
+      printf("Incorrect magic number.\nExiting...\n");
+      return;
+   }
    bytes_read = read(infile, &(header->file_size), 8);
    if(bytes_read != 8) { 
       printf("error reading file size\n"); 
@@ -39,19 +45,30 @@ void read_header(int infile, FileHeader *header) {
       printf("error reading padding\n");
       //return;
    }
-   printf("magic = %u, file_size = %lu, protection = %u\n", 
-          header->magic, header->file_size, header->protection);
+   printf("READ: magic = %u, file_size = %lu, protection = %07o, padding = %u\n", 
+          header->magic, header->file_size, header->protection, header->padding);
 }
 void write_header(int outfile, FileHeader *header) {
    printf("write_header called!\n");
+/*
+   uint32_t magic = header->magic;
+   uint64_t file_size = header->file_size;
+   uint16_t protection = header->protection;
+*/
    int bytes_written;
+   if(is_big()) { 
+      printf("This system is big endian\n");
+   }
+   else { 
+      printf("This system is little endian\n");
+   }
    bytes_written = write(outfile, &(header->magic), 4);
    bytes_written += write(outfile, &(header->file_size), 8);
    bytes_written += write(outfile, &(header->protection), 2);
    bytes_written += write(outfile, &(header->padding), 2);
    if(bytes_written != 16) { printf("Error: Did not write 16 bytes :o\n"); }
-   printf("Successfully wrote magic = %u, file_size = %lu, protection = %u\n", 
-          header->magic, header->file_size, header->protection);
+   printf("WRITE: magic = %u, file_size = %lu, protection = %07o, padding = %u\n", 
+          header->magic, header->file_size, header->protection, header->padding);
 }
 /*
 uint8_t next_char(int infile);
