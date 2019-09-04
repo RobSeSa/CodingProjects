@@ -10,6 +10,8 @@
 #define BLOCK_SIZE      4096
 #define BITS_IN_BYTE    8
 
+
+
 //
 // Struct definition for a compressed file's header.
 //

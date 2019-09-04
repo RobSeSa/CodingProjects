@@ -8,9 +8,75 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-int main() {
+int main(int argc, char **argv) {
    printf("This is the main function of LZW\n");
+   int vflag = 0, cflag = 0, dflag = 0, iflag = 0, oflag = 0;
+   char *inputFile = NULL;
+   int inputFd = 0, outputFd = 1;
+   char *outputFile = NULL;
+   int c;
+
+   struct stat fileStat;
+   fileStat.st_mode = 0;
+   while((c = getopt (argc, argv, "vcdi:o:")) != -1) {
+      switch(c) {
+         case 'v':
+            vflag = 1;
+            break;
+         case 'c':
+            cflag = 1;
+            break;
+         case 'd':
+            dflag = 1;
+            break;
+         case 'i':
+            iflag = 1;
+            inputFile = optarg;
+            inputFd = open(inputFile, O_RDONLY);
+            if(stat(inputFile, &fileStat) < 0) { return 1; }
+            break;
+         case 'o':
+            oflag = 1;
+            outputFile = optarg;
+            if(inputFd != 0) {
+               outputFd = open(outputFile, O_WRONLY | O_CREAT, fileStat.st_mode);
+            }
+            break;
+         default:
+            printf("Usage: ./lzwcoder -vcdi:o:\n");
+            break;
+      }
+   }
+   if(vflag) {
+      printf("vflag = %d, cflag = %d, dflag = %d, iflag = %d, oflag = %d\n",
+             vflag, cflag, dflag, iflag, oflag);
+      printf("inputfile = %s, outputFile = %s\n", inputFile, outputFile);
+      if(iflag) {
+         printf("File Permissions for %s:", inputFile);
+         printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+         printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+         printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+         printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+         printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+         printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+         printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+         printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+         printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+         printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+         printf("\n");
+      }
+   }
+
+   if(iflag) { close(inputFd); }
+   if(oflag) { close(outputFd); }
+   return 0;
+}
+
 
    //ListNode testing
 /*   char *word = "temp";
@@ -65,6 +131,7 @@ int main() {
    }
    trie_delete(root);
 */
+/*
    //hashTable.h testing
    HashTable *ht = ht_create(500);
    ht_print(ht);
@@ -82,5 +149,4 @@ int main() {
    }
    else { printf("not found :/\n"); }
    ht_delete(ht);
-   return 0;
-}
+*/
