@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
    struct stat fileStat;
    fileStat.st_mode = 0;
-   while((c = getopt (argc, argv, "vcdi:o:")) != -1) {
+   while((c = getopt (argc, argv, "vcdi:o:x")) != -1) {
       switch(c) {
          case 'v':
             vflag = 1;
@@ -53,32 +53,26 @@ int main(int argc, char **argv) {
                if(outputFd == -1) { printf("error opening %s\n", outputFile); }
             }
             break;
-/*
          case 'x':
-            outputFile = optarg;
-            if(inputFd != 0) {
-               outputFd = open(outputFile, O_WRONLY | O_CREAT, fileStat.st_mode);
-               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
-            }
-            else {
-               outputFd = open(outputFile, O_WRONLY | O_CREAT);
-               if(outputFd == -1) { printf("error opening %s\n", outputFile); }
-            }
-            FileHeader *fh = file_header_create(MAGIC, fileStat.st_size, 
+            printf("Creating header for base input file for %s.txt\n", inputFile);
+            FileHeader *temp = file_header_create(MAGIC, fileStat.st_size, 
                                                 fileStat.st_mode, 0x0000);
-            printf("Writing header from %s to %s\n", outputFile, inputFile);
-            write_header(outputFd, fh);
+            write_header(outputFd, temp);
+            uint8_t byte;
+            while(read(inputFd, &byte, 1) == 1) {
+               write(outputFd, &byte, 1);
+            }
+            printf("Successfully copied contents\n");
             return 0;
-*/
          default:
             printf("Usage: ./lzwcoder -vcdi:o:\n");
             break;
       }
    }
    if(vflag) {
-      printf("vflag = %d, cflag = %d, dflag = %d, iflag = %d, oflag = %d\n",
-             vflag, cflag, dflag, iflag, oflag);
-      printf("inputfile = %s, outputFile = %s\n", inputFile, outputFile);
+   //   printf("vflag = %d, cflag = %d, dflag = %d, iflag = %d, oflag = %d\n",
+   //          vflag, cflag, dflag, iflag, oflag);
+   //   printf("inputfile = %s, outputFile = %s\n", inputFile, outputFile);
       printf("%s file size = %lu\n", inputFile, fileStat.st_size);
       if(iflag) {
          printf("File Permissions for %s:", inputFile);
@@ -94,16 +88,22 @@ int main(int argc, char **argv) {
          printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
          printf("\n");
       }
+      if(cflag) { printf("in compression mode\n"); }
+      if(dflag) { printf("in decompression mode\n"); }
    }
-   FileHeader *fh = file_header_create(MAGIC, fileStat.st_size, fileStat.st_mode, 0x0000);
-   write_header(outputFd, fh);
-   read_header(inputFd, fh);
-/*
-   FileHeader *fh = file_header_create(MAGIC, 16, 33188, 0x0000);
-   write_header(outputFd, fh);
-   */
-   free(fh);
 
+   FileHeader *fh = file_header_create(0, 0, 0, 0);
+   read_header(inputFd, fh);
+   write_header(outputFd, fh);
+   free(fh);
+   //start of compression code
+   if(cflag) {
+      printf("|||||Starting Compression|||||\n");
+   }
+   //start of decompression code
+   else if(dflag) {
+      printf("|||||Starting Decompression|||||\n");
+   }
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }

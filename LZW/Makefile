@@ -35,6 +35,12 @@ debug_test: all
 	./lzwcoder -v -d -i test.zipped -o test.unzipped
 	@diff test.txt test.unzipped -s
 
+test: all
+	./lzwcoder -i mytest -o mytest.txt -x
+	./lzwcoder -v -c -i mytest.txt -o mytest.zipped
+	./lzwcoder -v -d -i mytest.zipped -o mytest.unzipped
+	@diff mytest.txt mytest.unzipped -s
+
 git-% :
 	git add ${SOURCES} ${HEADERS} Makefile
 	git commit -m "$(@:git-%=%)"
