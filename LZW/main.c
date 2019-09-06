@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 int main(int argc, char **argv) {
-   printf("\nThis is the main function of LZW\n");
+   printf("\nLZW...\n");
    int vflag = 0, cflag = 0, dflag = 0, iflag = 0, oflag = 0;
    char *inputFile = NULL;
    int inputFd = 0, outputFd = 1;
@@ -90,8 +90,6 @@ int main(int argc, char **argv) {
          printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
          printf("\n");
       }
-      if(cflag) { printf("in compression mode\n"); }
-      if(dflag) { printf("in decompression mode\n"); }
    }
 
    FileHeader *fh = file_header_create(0, 0, 0, 0);
@@ -100,24 +98,27 @@ int main(int argc, char **argv) {
    //start of compression code
    if(cflag) {
       printf("|||||Starting Compression|||||\n");
-   }
-   //start of decompression code
-   else if(dflag) {
-      printf("|||||Starting Decompression|||||\n");
-   }
       uint64_t i;
       uint8_t next;
-      printf("Printing Contents*******\n");
       for(i = 0; i < fh->file_size; i++) {
          next = next_char(inputFd);
          //convert to bits and output
          write(outputFd, &next, 1);
       }
       printf("Done outputting bytes\n");
+   }
+   //start of decompression code
+   else if(dflag) {
+      printf("|||||Starting Decompression|||||\n");
+   }
+   BitVector *codebv = code_num_to_bv(5, 16);
+   printf("Calling buffer_code(%s, codebv)\n", outputFile);
+   buffer_code(outputFd, codebv);
+   bv_delete(codebv);
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }
-   free(fh);
+  // free(fh);
    return 0;
 }
 

@@ -22,6 +22,7 @@ $(OBJECTS): %.o : %.c
 
 clean: spotless
 	rm -rf $(EXECBIN) infer-out
+	rm -rf ./*.zipped ./*.unzipped
 
 spotless:
 	rm -rf $(OBJECTS)
@@ -35,7 +36,9 @@ debug_test: all
 	./lzwcoder -v -d -i test.zipped -o test.unzipped
 	@diff test.txt test.unzipped -s
 
-test: all
+test:
+	make clean
+	make all
 	./lzwcoder -i mytest -o mytest.txt -x
 	./lzwcoder -v -c -i mytest.txt -o mytest.zipped
 	./lzwcoder -v -d -i mytest.zipped -o mytest.unzipped
