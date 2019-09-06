@@ -72,9 +72,6 @@ int main(int argc, char **argv) {
       }
    }
    if(vflag) {
-   //   printf("vflag = %d, cflag = %d, dflag = %d, iflag = %d, oflag = %d\n",
-   //          vflag, cflag, dflag, iflag, oflag);
-   //   printf("inputfile = %s, outputFile = %s\n", inputFile, outputFile);
       printf("%s file size = %lu\n", inputFile, fileStat.st_size);
       if(iflag) {
          printf("File Permissions for %s:", inputFile);
@@ -91,6 +88,11 @@ int main(int argc, char **argv) {
          printf("\n");
       }
    }
+
+
+
+
+
 
    FileHeader *fh = file_header_create(0, 0, 0, 0);
    read_header(inputFd, fh);
@@ -110,12 +112,25 @@ int main(int argc, char **argv) {
    //start of decompression code
    else if(dflag) {
       printf("|||||Starting Decompression|||||\n");
+      //convert to summing code, looking up in ht, adding to ht, and output word
+      BitVector *tempbv = next_code(inputFd, 16);
+      for(uint8_t i = 0; i < tempbv->length; i++) {
+         printf("tempbv->vector[%u] = %c\n", i, tempbv->vector[i]);
+         buffer_word(outputFd, &tempbv->vector[i], 1);
+      }
+      flush_word(outputFd);
+      bv_delete(tempbv);
    }
    BitVector *codebv = code_num_to_bv(5, 16);
    printf("Calling buffer_code(%s, codebv)\n", outputFile);
    buffer_code(outputFd, codebv);
    flush_code(outputFd);
    bv_delete(codebv);
+
+   char *word = "big word";
+   buffer_word(outputFd, (uint8_t *)word, 8);
+   flush_word(outputFd);
+
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }
