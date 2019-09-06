@@ -80,20 +80,25 @@ void write_header(int outfile, FileHeader *header) {
 
 uint8_t in_buffer[4096];
 uint64_t in_index = 0;//index in bits
+uint16_t total = 0;//total bytes in buffer
 
 uint8_t next_char(int infile) {
-   if(in_index % (4096 * 8) == 0) {
-      int count = read(infile, in_buffer, 4096);
-      if( count < 4096) {
-         printf("Done reading. %d bytes in buffer left to flush\n", count);
+  if(total == 0) {
+      total = read(infile, in_buffer, 4096);
+      if(total == 0) {
+         printf("Error: Read too many bytes in next_char\n");
+         return 0;
       }
    }
-   int byte_index = in_index / 8;
+   int byte_index = (in_index / 8) % 4096;
    in_index += 8;
+   total--;
    return in_buffer[byte_index];
 }
 /*
-void buffer_code(int outfile, BitVector *code);
+void buffer_code(int outfile, BitVector *code) {
+
+}
 void flush_code(int outfile);
 BitVector *next_code(int infile, uint64_t bit_len);
 void buffer_word(int outfile, uint8_t *word, uint64_t wordlen);

@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
 
    struct stat fileStat;
    fileStat.st_mode = 0;
+   fileStat.st_size = 0;
    while((c = getopt (argc, argv, "vcdi:o:x")) != -1) {
       switch(c) {
          case 'v':
@@ -39,7 +40,7 @@ int main(int argc, char **argv) {
             inputFile = optarg;
             inputFd = open(inputFile, O_RDONLY);
             //get stats for input file
-            if(stat(inputFile, &fileStat) < 0) { return 1; }
+            if(stat(inputFile, &fileStat) < 0) { close(inputFd); return 1; }
             break;
          case 'o':
             oflag = 1;
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
             }
             break;
          case 'x':
+            //requires input file
             printf("Creating header for base input file for %s.txt\n", inputFile);
             FileHeader *temp = file_header_create(MAGIC, fileStat.st_size, 
                                                 fileStat.st_mode, 0x0000);
@@ -95,7 +97,6 @@ int main(int argc, char **argv) {
    FileHeader *fh = file_header_create(0, 0, 0, 0);
    read_header(inputFd, fh);
    write_header(outputFd, fh);
-   free(fh);
    //start of compression code
    if(cflag) {
       printf("|||||Starting Compression|||||\n");
@@ -104,9 +105,19 @@ int main(int argc, char **argv) {
    else if(dflag) {
       printf("|||||Starting Decompression|||||\n");
    }
+      uint64_t i;
+      uint8_t next;
+      printf("Printing Contents*******\n");
+      for(i = 0; i < fh->file_size; i++) {
+         next = next_char(inputFd);
+         //convert to bits and output
+         write(outputFd, &next, 1);
+      }
+      printf("Done outputting bytes\n");
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }
+   free(fh);
    return 0;
 }
 
