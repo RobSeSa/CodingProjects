@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
    BitVector *codebv = code_num_to_bv(5, 16);
    printf("Calling buffer_code(%s, codebv)\n", outputFile);
    buffer_code(outputFd, codebv);
+   flush_code(outputFd);
    bv_delete(codebv);
 
    if(iflag) { close(inputFd); }

@@ -114,6 +114,7 @@ void buffer_code(int outfile, BitVector *code) {
          bv_print(temp);
          printf("\n");
          out_buffer[(out_index/8) - 1] = temp->vector[0];
+         j = 0;
       }
       if(bv_get_bit(code, i)) {
          bv_set_bit(temp, j);
@@ -124,19 +125,39 @@ void buffer_code(int outfile, BitVector *code) {
       j++;
       out_index++;
    }
+   if(((out_index % 8) == 0) && (out_index != 0)) {//set the byte in out_buffer
+      printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
+      bv_print(temp);
+      printf("\n");
+      out_buffer[(out_index/8) - 1] = temp->vector[0];
+   }
 }
+
+//needs further testing
 void flush_code(int outfile) {
    if(out_index != 0) {
       //flush code
-      write(outfile, out_buffer, (out_index/8));
-      //write the last byte
-      if(out_index%8 != 0) {
+      int total;
+      total = write(outfile, out_buffer, (out_index/8));
+      if(out_index%8 != 0) {//one more byte to write out
          BitVector *temp = bv_create(8);
          uint64_t i;
-         for(i = 7; i >= out_index%8; i--) {
-            
+         for(i = 0; i < 8; i++) {//iterate through the byte
+            if(i < out_index % 8) {//if values exist in the buffer
+               if((out_buffer[out_index/8] >> i) & 1u) {//1 in the buffer
+                  bv_set_bit(temp, i);
+               }
+               else {//0 in the buffer
+                  bv_clr_bit(temp, i);
+               }
+            }
+            else {//pad with 0s
+               bv_clr_bit(temp, i);
+            }
          }
+         total += write(outfile, &(temp->vector[0]), 1); //write out the one byte
       }
+      printf("Flushed out %d bytes\n", total);
    }
 }
 /*
