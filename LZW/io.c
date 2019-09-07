@@ -79,7 +79,8 @@ void write_header(int outfile, FileHeader *header) {
 }
 
 uint8_t in_buffer[4096];
-uint64_t in_index = 0;//index in bits
+uint64_t i_index = 0;//index in bits used for next_char bc no reset
+uint64_t in_index = 0;//index in bits used to other input
 uint16_t total = 0;//total bytes in buffer
 
 uint8_t next_char(int infile) {
@@ -90,8 +91,8 @@ uint8_t next_char(int infile) {
          return 0;
       }
    }
-   int byte_index = (in_index / 8) % 4096;
-   in_index += 8;
+   int byte_index = (i_index / 8) % 4096;
+   i_index += 8;
    total--;
    return in_buffer[byte_index];
 }
@@ -159,6 +160,7 @@ void flush_code(int outfile) {
          bv_delete(temp);
       }
       printf("flush_code: Flushed out %d bytes\n", total);
+      out_index = 0;
    }
 }
 /*
@@ -169,16 +171,20 @@ uint16_t total = 0;//total bytes in buffer
 BitVector *next_code(int infile, uint64_t bit_len) {
    BitVector *temp = bv_create(bit_len);
    uint64_t i;
-   in_index = 0;
-   total = 0;
    for(i = 0; i < bit_len; i++) {
-      printf("i = %lu, in_index = %lu\n", i, in_index);
+      //printf("i = %lu, in_index = %lu\n", i, in_index);
       if(in_index == total * 8) {//need to read buffer
          total = read(infile, in_buffer, 4096);
+         //printf("Printing %u bytes read into in_buffer as words:\n", total);
+         //print_buffer(in_buffer, 4096, 0);
+         //printf("Printing 2 bytes read into in_buffer as bits:\n");
+         //print_buffer(in_buffer, 2, 1);
          in_index = 0;
          if(total == 0) { 
             printf("next_code: No more bytes to read\n");
-            break;
+            in_index = 0;
+            total = 0;
+            return NULL;
          }
       }
       if((in_buffer[in_index/8] >> (in_index % 8)) & 1u) {//1
@@ -198,13 +204,12 @@ BitVector *next_code(int infile, uint64_t bit_len) {
    return temp;
 }
 void buffer_word(int outfile, uint8_t *word, uint64_t wordlen) {
-   printf("buffer_word\n");
+   //printf("buffer_word\n");
    uint64_t i;
-   out_index = 0;
    for(i = 0; i < wordlen; i++) {
       if(out_index == 4096 * 8) {//buffer full
          write(outfile, out_buffer, 4096);
-         print_buffer(out_buffer, 4096, 0);
+         //print_buffer(out_buffer, 4096, 0);
          out_index = 0;
       }
       out_buffer[out_index/8] = word[i];
@@ -215,9 +220,11 @@ void buffer_word(int outfile, uint8_t *word, uint64_t wordlen) {
 void flush_word(int outfile) {
    printf("flush_word\n");
    if(out_index != 0) {
-      write(outfile, out_buffer, out_index/8);
-      print_buffer(out_buffer, out_index/8, 0);
+      int count = write(outfile, out_buffer, out_index/8);
+      printf("Flushed %d of %lu attempted bytes\n", count, out_index/8);
+      //print_buffer(out_buffer, out_index/8, 0);
    }
+   out_index = 0;
 }
 void print_buffer(uint8_t *b, uint64_t len, int bits) {
    if(bits) {

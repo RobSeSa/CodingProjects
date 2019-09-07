@@ -113,14 +113,16 @@ int main(int argc, char **argv) {
    else if(dflag) {
       printf("|||||Starting Decompression|||||\n");
       //convert to summing code, looking up in ht, adding to ht, and output word
-      BitVector *tempbv = next_code(inputFd, 16);
-      for(uint8_t i = 0; i < tempbv->length; i++) {
-         printf("tempbv->vector[%u] = %c\n", i, tempbv->vector[i]);
-         buffer_word(outputFd, &tempbv->vector[i], 1);
+      BitVector *tempbv = next_code(inputFd, 8);
+      while(tempbv != NULL) {
+         //printf("%c", tempbv->vector[0]);
+         buffer_word(outputFd, &tempbv->vector[0], 1);
+         tempbv = next_code(inputFd, 8);
       }
       flush_word(outputFd);
-      bv_delete(tempbv);
+      //bv_delete(tempbv);
    }
+/*
    BitVector *codebv = code_num_to_bv(5, 16);
    printf("Calling buffer_code(%s, codebv)\n", outputFile);
    buffer_code(outputFd, codebv);
@@ -130,7 +132,7 @@ int main(int argc, char **argv) {
    char *word = "big word";
    buffer_word(outputFd, (uint8_t *)word, 8);
    flush_word(outputFd);
-
+*/
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }
