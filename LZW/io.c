@@ -104,6 +104,9 @@ void buffer_code(int outfile, BitVector *code) {
    BitVector *temp = bv_create(8);
    uint64_t i;
    uint8_t j = 0;
+   printf("code->length = %u; ", code->length);
+   printf("buffer_code: ");
+   bv_print(code);
    for(i = 0; i < code->length; i++) {
       //printf("i = %lu, j = %u, out_index = %lu\n", i, j, out_index);
       if((out_index != 0) && ((out_index%(4096*8)) == 0)) {//buffer is full
@@ -111,9 +114,9 @@ void buffer_code(int outfile, BitVector *code) {
          out_index = 0;
       }
       if(((out_index % 8) == 0) && (out_index != 0)) {//set the byte in out_buffer
-         printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
-         bv_print(temp);
-         printf("\n");
+         //printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
+         //bv_print(temp);
+         //printf("\n");
          out_buffer[(out_index/8) - 1] = temp->vector[0];
          j = 0;
       }
@@ -127,9 +130,9 @@ void buffer_code(int outfile, BitVector *code) {
       out_index++;
    }
    if(((out_index % 8) == 0) && (out_index != 0)) {//set the byte in out_buffer
-      printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
+      /*printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
       bv_print(temp);
-      printf("\n");
+      printf("\n");*/
       out_buffer[(out_index/8) - 1] = temp->vector[0];
    }
 }

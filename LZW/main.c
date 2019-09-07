@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <math.h>
 
 int main(int argc, char **argv) {
    printf("\nLZW...\n");
@@ -39,13 +40,17 @@ int main(int argc, char **argv) {
             iflag = 1;
             inputFile = optarg;
             inputFd = open(inputFile, O_RDONLY);
+            if(inputFd == -1) {
+               printf("Helpful message: There was an error opening %s\n", inputFile);
+               return 1;
+            }
             //get stats for input file
             if(stat(inputFile, &fileStat) < 0) { close(inputFd); return 1; }
             break;
-         case 'o':
+         case 'o'://add handling for no output file specified
             oflag = 1;
             outputFile = optarg;
-            if(inputFd != 0) {
+            if(inputFd != 0) {//input file specified so use its protection bits
                outputFd = open(outputFile, O_WRONLY | O_CREAT, fileStat.st_mode);
                if(outputFd == -1) { printf("error opening %s\n", outputFile); }
             }
@@ -100,6 +105,42 @@ int main(int argc, char **argv) {
    //start of compression code
    if(cflag) {
       printf("|||||Starting Compression|||||\n");
+      TrieNode *root = trie_create();
+      TrieNode *curr_node = root;
+      TrieNode *next_node;
+      uint64_t code_num = 256;
+      uint64_t encoded_chars = 0;
+      BitVector *curr_code;
+      uint8_t curr_char;
+      uint8_t num_bits;
+      while(encoded_chars != fh->file_size) {
+         num_bits = log2(code_num) + 1;
+         curr_char = next_char(inputFd);
+         next_node = trie_step(curr_node, curr_char);
+         if(encoded_chars == 0 || next_node) {//word is in the trie
+            curr_node = next_node;
+         }
+         else {//word is not in the trie
+            curr_code = code_num_to_bv(curr_node->code_num, num_bits);
+            buffer_code(outputFd, curr_code);
+            curr_node->children[curr_char] = trie_node_create(curr_char, code_num);
+            curr_node = root->children[curr_char];
+            code_num++;
+         }
+         if(code_num == UINT64_MAX) {
+            //reset the trie
+            trie_delete(root);
+            root = trie_create();
+            curr_node = root->children[curr_char];
+            code_num = 256;
+         }
+         encoded_chars++;
+      }
+      flush_code(outputFd);
+      trie_delete(root);
+      bv_delete(curr_code);
+   }
+/*
       uint64_t i;
       uint8_t next;
       for(i = 0; i < fh->file_size; i++) {
@@ -109,6 +150,8 @@ int main(int argc, char **argv) {
       }
       printf("Done outputting bytes\n");
    }
+*/
+
    //start of decompression code
    else if(dflag) {
       printf("|||||Starting Decompression|||||\n");
@@ -133,7 +176,6 @@ int main(int argc, char **argv) {
    buffer_word(outputFd, (uint8_t *)word, 8);
    flush_word(outputFd);
 */
-
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }
   // free(fh);
