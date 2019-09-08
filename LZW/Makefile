@@ -21,8 +21,8 @@ $(OBJECTS): %.o : %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean: spotless
+	rm -rf mytest.zipped mytest.unzipped
 	rm -rf $(EXECBIN) infer-out
-	rm -rf ./*.zipped ./*.unzipped
 
 spotless:
 	rm -rf $(OBJECTS)

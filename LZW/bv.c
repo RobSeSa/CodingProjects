@@ -56,7 +56,6 @@ BitVector *code_num_to_bv(uint64_t code_num, uint8_t bit_len) {
       bit = (code_num >> i) & 1UL;
       if(bit) { bv_set_bit(bv, i); }
    }
-   printf("\n");
 
    return bv;
 }
@@ -77,29 +76,23 @@ uint64_t bv_to_code_num(BitVector *v) {
    return code;
 }
 void bv_print(BitVector *v) {
+   int i;
+   for(i = (int) v->length - 1; i >= 0; i--) {
+      printf("%u", bv_get_bit(v, i));
+   }
+/*
    int bit, byte_index, index, last = 1;
-   //printf("code_num is %lu with length %u\n", code_num, bit_len);
-   for(byte_index = 0; byte_index <= v->length / 8; byte_index++) {
+   //printf("code_num is %lu with length %u\n", bv_to_code_num(v), v->length);
+   for(byte_index = v->length/8; byte_index >= 0; byte_index--) {
       for(index = 8; index >= 0; index--) {
          if(byte_index == v->length / 8 && last) {//on last byte
             index = v->length % 8;
             last = 0;
          }
          bit = (v->vector[byte_index] >> index) & 1UL;
+   //      printf(" bit[%d]=", (byte_index*8) + index);
          printf("%u", bit);
       }
    }
-}
-/*
-void bv_print(BitVector *v) {
-   int i;
-   uint8_t bit, byte_index, index;
-   //printf("code_num is %lu with length %u\n", code_num, bit_len);
-   for(i = 0; i < v->length; i++) {
-      byte_index = i/8;
-      index = i%8;
-      bit = (v->vector[byte_index] >> index) & 1UL;
-      printf("%u", bit);
-   }
-}
 */
+}

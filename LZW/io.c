@@ -101,44 +101,27 @@ uint8_t out_buffer[4096];
 uint64_t out_index = 0;
 
 void buffer_code(int outfile, BitVector *code) {
-   BitVector *temp = bv_create(8);
-   uint64_t i;
-   uint8_t j = 0;
-   printf("code->length = %u; ", code->length);
-   printf("buffer_code: ");
-   bv_print(code);
-   for(i = 0; i < code->length; i++) {
-      //printf("i = %lu, j = %u, out_index = %lu\n", i, j, out_index);
-      if((out_index != 0) && ((out_index%(4096*8)) == 0)) {//buffer is full
+   int i;
+   for(i = (int) code->length - 1; i >= 0; i--) {
+      if(out_index == (4096*8)) {//full buffer
          write(outfile, out_buffer, 4096);
          out_index = 0;
       }
-      if(((out_index % 8) == 0) && (out_index != 0)) {//set the byte in out_buffer
-         //printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
-         //bv_print(temp);
-         //printf("\n");
-         out_buffer[(out_index/8) - 1] = temp->vector[0];
-         j = 0;
+      if(out_index % 8 == 0) {//on a new byte
+         out_buffer[out_index/8] = 0;
       }
-      if(bv_get_bit(code, i)) {
-         bv_set_bit(temp, j);
+      if(bv_get_bit(code, i)) {//start from MSB side of bit vector
+         //set bit out_index in out_buffer
+         out_buffer[out_index/8] |= 1U << (7 - (out_index % 8));
       }
-      else {
-         bv_clr_bit(temp, j);
-      }
-      j++;
       out_index++;
-   }
-   if(((out_index % 8) == 0) && (out_index != 0)) {//set the byte in out_buffer
-      /*printf("setting out_buffer[%lu] = ", (out_index/8) - 1);
-      bv_print(temp);
-      printf("\n");*/
-      out_buffer[(out_index/8) - 1] = temp->vector[0];
    }
 }
 
 //needs further testing
 void flush_code(int outfile) {
+   printf("Flushing buffer: ");
+   print_buffer(out_buffer, out_index, 1);
    if(out_index != 0) {
       //flush code
       int total;
@@ -197,9 +180,11 @@ BitVector *next_code(int infile, uint64_t bit_len) {
          bv_clr_bit(temp, i);
       }
       in_index++;
+/*
       if((i%8 == 0) && (i != 0)) {//decrement total per byte
          total--;
       }
+*/
    }
    printf("next_code: Finished reading next code:");
    bv_print(temp);
@@ -230,19 +215,26 @@ void flush_word(int outfile) {
    out_index = 0;
 }
 void print_buffer(uint8_t *b, uint64_t len, int bits) {
-   if(bits) {
-      printf("printing buffer as bits\n");
+   if(bits) {//len is bits for printing bits
+      printf("print_buffer as bits\n");
       uint64_t i;
       BitVector *temp = bv_create(8);
-      for(i = 0; i < len; i++) {
+      for(i = 0; i < len/8; i++) {
          temp->vector[0] = b[i];
          bv_print(temp);
+      }
+      if(len%8 != 0) {//leftover bits
+         temp->vector[0] = b[(len/8)];
+         int j;
+         for(j =  7; j >= (int)(8 - (len%8)); j--) {
+            printf("%u", bv_get_bit(temp, j));
+         }
       }
       printf("\n");
       bv_delete(temp);
    }
-   else {
-      printf("printing buffer as words\n");
+   else {//len is bytes for printing words
+      printf("print_buffer as words\n");
       uint64_t i;
       for(i = 0; i < len; i++) {
          printf("%c", b[i]);

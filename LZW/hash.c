@@ -35,6 +35,12 @@ HashTable *ht_create(uint64_t length) {
    temp->salt[1] = MAGIC;
    temp->length = length;
    temp->head = malloc(sizeof(ListNode)*length);
+   uint8_t i;
+   int j;
+   for(j = 0; j < 256; j++) {
+      ht_add(temp, i, &i, 1);
+      i++;
+   }
    return temp;
 }
 
