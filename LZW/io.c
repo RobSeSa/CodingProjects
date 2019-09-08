@@ -102,6 +102,9 @@ uint64_t out_index = 0;
 
 void buffer_code(int outfile, BitVector *code) {
    int i;
+   printf("Buffering code: ");
+   bv_print(code);
+   printf("\n");
    for(i = (int) code->length - 1; i >= 0; i--) {
       if(out_index == (4096*8)) {//full buffer
          write(outfile, out_buffer, 4096);
@@ -118,7 +121,6 @@ void buffer_code(int outfile, BitVector *code) {
    }
 }
 
-//needs further testing
 void flush_code(int outfile) {
    printf("Flushing buffer: ");
    print_buffer(out_buffer, out_index, 1);

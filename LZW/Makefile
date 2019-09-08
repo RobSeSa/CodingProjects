@@ -37,7 +37,8 @@ debug_test: all
 	@diff test.txt test.unzipped -s
 
 test:
-	make clean
+	rm -rf mytest.zipped
+	rm -rf mytest.unzipped
 	make all
 	./lzwcoder -i mytest -o mytest.txt -x
 	./lzwcoder -v -c -i mytest.txt -o mytest.zipped
