@@ -22,27 +22,15 @@ void read_header(int infile, FileHeader *header) {
    printf("**read_header called!\n");
    int bytes_read;
    bytes_read = read(infile, &(header->magic), 4);
-   if(bytes_read != 4) { 
-      printf("error reading magic number\n");
-      //return;
-   }
    if(header->magic != MAGIC) {
       printf("Incorrect magic number.\nExiting...\n");
       return;
    }
-   bytes_read = read(infile, &(header->file_size), 8);
-   if(bytes_read != 8) { 
-      printf("error reading file size\n"); 
-      //return;
-   }
-   bytes_read = read(infile, &(header->protection), 2);
-   if(bytes_read != 2) { 
-      printf("error reading protection\n");
-      //return;
-   }
-   bytes_read = read(infile, &(header->padding), 2);
-   if(bytes_read != 2) { 
-      printf("error reading padding\n");
+   bytes_read += read(infile, &(header->file_size), 8);
+   bytes_read += read(infile, &(header->protection), 2);
+   bytes_read += read(infile, &(header->padding), 2);
+   if(bytes_read != 16) { 
+      printf("read_header: Error - read %d of 16 header bytes\n", bytes_read);
       //return;
    }
    if(is_big()) { 
@@ -106,6 +94,7 @@ void buffer_code(int outfile, BitVector *code) {
    bv_print(code);
    printf("\n");
    for(i = (int) code->length - 1; i >= 0; i--) {
+      printf("out_index %lu: ", out_index);
       if(out_index == (4096*8)) {//full buffer
          write(outfile, out_buffer, 4096);
          out_index = 0;
@@ -116,36 +105,26 @@ void buffer_code(int outfile, BitVector *code) {
       if(bv_get_bit(code, i)) {//start from MSB side of bit vector
          //set bit out_index in out_buffer
          out_buffer[out_index/8] |= 1U << (7 - (out_index % 8));
+         printf("1");
+      }
+      else {
+         printf("0");
       }
       out_index++;
+      printf("\n");
    }
 }
 
 void flush_code(int outfile) {
    printf("Flushing buffer: ");
    print_buffer(out_buffer, out_index, 1);
+   printf("\n");
    if(out_index != 0) {
       //flush code
       int total;
       total = write(outfile, out_buffer, (out_index/8));
       if(out_index%8 != 0) {//one more byte to write out
-         BitVector *temp = bv_create(8);
-         uint64_t i;
-         for(i = 0; i < 8; i++) {//iterate through the byte
-            if(i < out_index % 8) {//if values exist in the buffer
-               if((out_buffer[out_index/8] >> i) & 1u) {//1 in the buffer
-                  bv_set_bit(temp, i);
-               }
-               else {//0 in the buffer
-                  bv_clr_bit(temp, i);
-               }
-            }
-            else {//pad with 0s
-               bv_clr_bit(temp, i);
-            }
-         }
-         total += write(outfile, &(temp->vector[0]), 1); //write out the one byte
-         bv_delete(temp);
+         total += write(outfile, &out_buffer[(out_index/8)+1], 1); //write out the one byte
       }
       printf("flush_code: Flushed out %d bytes\n", total);
       out_index = 0;
@@ -158,15 +137,10 @@ uint16_t total = 0;//total bytes in buffer
 */
 BitVector *next_code(int infile, uint64_t bit_len) {
    BitVector *temp = bv_create(bit_len);
-   uint64_t i;
-   for(i = 0; i < bit_len; i++) {
-      //printf("i = %lu, in_index = %lu\n", i, in_index);
-      if(in_index == total * 8) {//need to read buffer
+   int i;
+   for(i = bit_len - 1; i >= 0; i--) {
+      if(in_index == (total*8)) {
          total = read(infile, in_buffer, 4096);
-         //printf("Printing %u bytes read into in_buffer as words:\n", total);
-         //print_buffer(in_buffer, 4096, 0);
-         //printf("Printing 2 bytes read into in_buffer as bits:\n");
-         //print_buffer(in_buffer, 2, 1);
          in_index = 0;
          if(total == 0) { 
             printf("next_code: No more bytes to read\n");
@@ -175,18 +149,20 @@ BitVector *next_code(int infile, uint64_t bit_len) {
             return NULL;
          }
       }
-      if((in_buffer[in_index/8] >> (in_index % 8)) & 1u) {//1
+      if(buffer_get_bit(in_buffer, in_index)) {
          bv_set_bit(temp, i);
+         printf("bit %lu: 1; ", in_index);
+         printf("bv: ");
+         bv_print(temp);
+         printf("\n");
       }
-      else {//0
-         bv_clr_bit(temp, i);
+      else {
+         printf("bit %lu: 0; ", in_index);
+         printf("bv: ");
+         bv_print(temp);
+         printf("\n");
       }
       in_index++;
-/*
-      if((i%8 == 0) && (i != 0)) {//decrement total per byte
-         total--;
-      }
-*/
    }
    printf("next_code: Finished reading next code:");
    bv_print(temp);
@@ -220,6 +196,12 @@ void print_buffer(uint8_t *b, uint64_t len, int bits) {
    if(bits) {//len is bits for printing bits
       printf("print_buffer as bits\n");
       uint64_t i;
+      for(i = 0; i < (((len/8)+1)*8); i++) {
+      //for(i = 0; i < len; i++) {
+         printf("%u", buffer_get_bit(b, i)); 
+      }
+/*
+      uint64_t i;
       BitVector *temp = bv_create(8);
       for(i = 0; i < len/8; i++) {
          temp->vector[0] = b[i];
@@ -234,6 +216,7 @@ void print_buffer(uint8_t *b, uint64_t len, int bits) {
       }
       printf("\n");
       bv_delete(temp);
+*/
    }
    else {//len is bytes for printing words
       printf("print_buffer as words\n");
@@ -243,4 +226,12 @@ void print_buffer(uint8_t *b, uint64_t len, int bits) {
       }
       printf("\n");
    }
+}
+
+uint8_t buffer_get_bit(uint8_t *b, uint64_t index) {
+   uint8_t bit = 1 << (7 - (index % 8));
+   if(b[index/8] & bit) {
+      return 1;
+   }
+   else { return 0; }
 }

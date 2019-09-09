@@ -66,10 +66,13 @@ int main(int argc, char **argv) {
                                                 fileStat.st_mode, 0x0000);
             write_header(outputFd, temp);
             uint8_t byte;
+            uint64_t r_count;
+            r_count = 0;
             while(read(inputFd, &byte, 1) == 1) {
                write(outputFd, &byte, 1);
+               r_count++; 
             }
-            printf("Successfully copied contents\n");
+            printf("Successfully copied %lu bytes\n", r_count);
             return 0;
          default:
             printf("Usage: ./lzwcoder -vcdi:o:\n");
@@ -116,7 +119,7 @@ int main(int argc, char **argv) {
       while(encoded_chars != fh->file_size) {
          num_bits = log2(code_num) + 1;
          curr_char = next_char(inputFd);
-         printf("next_char(inputFd) = %c\n", curr_char);
+         printf("encoded_char = %lu; next_char(inputFd) = %c\n", encoded_chars, curr_char);
          next_node = trie_step(curr_node, curr_char);
          if(encoded_chars == 0 || next_node) {//next_node is in the trie
             curr_node = next_node;
@@ -124,6 +127,7 @@ int main(int argc, char **argv) {
          else {//next_node is not in the trie
             printf("%c not found\n", curr_char);
             curr_code = code_num_to_bv(curr_node->code_num, num_bits);
+            printf("curr_node->code_num: %lu\n", curr_node->code_num);
             buffer_code(outputFd, curr_code);
             printf("adding %c->children[%c] = (%c, %lu)\n\n", curr_node->sym, curr_char, curr_char, code_num);
             curr_node->children[curr_char] = trie_node_create(curr_char, code_num);
@@ -166,12 +170,29 @@ int main(int argc, char **argv) {
       uint64_t curr_code_num;
 
       uint64_t decoded_chars = 0;
-      while(decoded_chars != fh->file_size && decoded_chars < 2) {
+      while(decoded_chars != fh->file_size && decoded_chars < 100) {
          bit_len = log2(code_num + 1) + 1;
          curr_code = next_code(inputFd, bit_len);
-         curr_code_num = bv_to_code_num(curr_code);
-         printf("curr_code_num = %lu\n", curr_code_num);
-         decoded_chars++;
+         if(curr_code) {//a code was read
+            curr_code_num = bv_to_code_num(curr_code);
+            printf("curr_code_num = %lu\n", curr_code_num);
+            printf("curr_code_num = %c\n", (char)curr_code_num);
+            //check if curr_code_num exists in hash table
+            //if first code read or just reset -> buffer the current word
+            //set previous word to current word
+            //set reset flag to false
+            //go to next code
+            //
+            //if current code exists in hash table && not first code
+            //   -> set current word buffer to the corresponding word
+            //      find previous word using previous code number
+            //      create a new entry where the word = prev word + first char
+            //         of curr word
+            //      set its code num to next available code num
+            //      increment the counter
+            decoded_chars++;
+         }
+         else { break; }
       }
 /*
       HashTable *ht = ht_create(fh->file_size/2);

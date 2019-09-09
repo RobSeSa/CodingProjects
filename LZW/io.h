@@ -108,4 +108,9 @@ void flush_word(int outfile);
 //
 void print_buffer(uint8_t *b, uint64_t len, int bits);
 
+//
+// Gets the bit at the current location of the buffer
+// No incrementation, size checking
+uint8_t buffer_get_bit(uint8_t *b, uint64_t index);
+
 #endif

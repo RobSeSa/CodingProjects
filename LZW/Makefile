@@ -37,8 +37,8 @@ debug_test: all
 	@diff test.txt test.unzipped -s
 
 test:
-	rm -rf mytest.zipped
-	rm -rf mytest.unzipped
+	rm -rf mytest.zipped mytest.unzipped mytest.txt
+	ls
 	make all
 	./lzwcoder -i mytest -o mytest.txt -x
 	./lzwcoder -v -c -i mytest.txt -o mytest.zipped
