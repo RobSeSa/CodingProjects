@@ -164,37 +164,6 @@ int main(int argc, char **argv) {
    //start of decompression code
    else if(dflag) {
       printf("\n\n|||||Starting Decompression|||||\n");
-      uint64_t code_num = 256;
-      uint64_t bit_len;
-      BitVector *curr_code;
-      uint64_t curr_code_num;
-
-      uint64_t decoded_chars = 0;
-      while(decoded_chars != fh->file_size && decoded_chars < 100) {
-         bit_len = log2(code_num + 1) + 1;
-         curr_code = next_code(inputFd, bit_len);
-         if(curr_code) {//a code was read
-            curr_code_num = bv_to_code_num(curr_code);
-            printf("curr_code_num = %lu\n", curr_code_num);
-            printf("curr_code_num = %c\n", (char)curr_code_num);
-            //check if curr_code_num exists in hash table
-            //if first code read or just reset -> buffer the current word
-            //set previous word to current word
-            //set reset flag to false
-            //go to next code
-            //
-            //if current code exists in hash table && not first code
-            //   -> set current word buffer to the corresponding word
-            //      find previous word using previous code number
-            //      create a new entry where the word = prev word + first char
-            //         of curr word
-            //      set its code num to next available code num
-            //      increment the counter
-            decoded_chars++;
-         }
-         else { break; }
-      }
-/*
       HashTable *ht = ht_create(fh->file_size/2);
       uint64_t code_num = 256;
       uint64_t bit_len;
@@ -208,7 +177,6 @@ int main(int argc, char **argv) {
       ListNode *curr_entry;
       
       uint8_t *prev_word = malloc(sizeof(uint8_t) * prev_size);
-      BitVector *prev_code;
       uint64_t prev_code_num;
       ListNode *prev_entry;
 
@@ -218,6 +186,10 @@ int main(int argc, char **argv) {
       while(decoded_chars != fh->file_size) {
          bit_len = log2(code_num + 1) + 1;
          curr_code = next_code(inputFd, bit_len);
+         if(curr_code == NULL) {
+            printf("Error occurred reading code.\nExiting...\n");
+            break;
+         }
          curr_code_num = bv_to_code_num(curr_code);
          printf("curr_code_num = %lu\n", curr_code_num);
          curr_entry = ht_lookup(ht, curr_code_num);
@@ -239,47 +211,46 @@ int main(int argc, char **argv) {
             prev_word = prev_entry->word;
             //test if prev_entry->word is too large for new_word buffer
             //not sure if this part is right
-            if(prev_entry->wordlen > prev_size + 1) {
+            if(prev_entry->wordlen + 1 > prev_size) {
                prev_size *= 2;
                new_word = realloc(curr_word, prev_size);
             }
             new_word = prev_word;
             new_word[prev_entry->wordlen] = curr_word[0];
-            ht_add(ht, code_num, new_word, prev_entry->wordlen);
+            ht_add(ht, code_num, new_word, prev_entry->wordlen + 1);
             code_num++;
-            buffer_word(curr_entry->word);
+            buffer_word(outputFd, curr_entry->word, curr_entry->wordlen);
             decoded_chars += curr_entry->wordlen;
-            prev_code_num = 
+            //no idea what to set prev_code_num to
+            prev_code_num = curr_entry->code_num;
          }
          else {//code was not found in the ht
             prev_entry = ht_lookup(ht, prev_code_num);
+            prev_word = prev_entry->word;
+            if(prev_entry->wordlen + 1 > curr_size) {
+               curr_size *= 2;
+               curr_word = realloc(curr_word, curr_size);
+            }
+            curr_word = prev_word;
+            curr_word[prev_entry->wordlen] = prev_word[0];
+            ht_add(ht, code_num, curr_word, prev_entry->wordlen + 1);
+            code_num++;
+            buffer_word(outputFd, curr_word, prev_entry->wordlen + 1);
+            decoded_chars += prev_entry->wordlen + 1;
+         }
+         if(code_num == UINT64_MAX - 1) {
+            //reset hash table
+            code_num = 256;
+            reset = 1;
          }
       }
-*/
-   }
-
-/*
-      //convert to summing code, looking up in ht, adding to ht, and output word
-      BitVector *tempbv = next_code(inputFd, 8);
-      while(tempbv != NULL) {
-         //printf("%c", tempbv->vector[0]);
-         buffer_word(outputFd, &tempbv->vector[0], 1);
-         tempbv = next_code(inputFd, 8);
-      }
       flush_word(outputFd);
-      //bv_delete(tempbv);
+      /*free(curr_word);
+      free(prev_word);
+      free(new_word);*/
    }
-*/
 
-/*testing ht
-   printf("templn->word = %s\n", templn->word);
-   HashTable *tempht = ht_create(fh->file_size / 2);
-   ListNode *templn = ht_lookup(tempht, 98);
-   printf("templn->word = %s\n", templn->word);
-   ht_add(tempht, 256, (uint8_t *) "ab", 2);
-   templn = ht_lookup(tempht, 256);
-   printf("templn->word = %s\n", templn->word);
-*/ 
+
 
    if(iflag) { close(inputFd); }
    if(oflag) { close(outputFd); }

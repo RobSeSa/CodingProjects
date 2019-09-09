@@ -135,15 +135,18 @@ uint8_t in_buffer[4096];
 uint64_t in_index = 0;//index in bits
 uint16_t total = 0;//total bytes in buffer
 */
+uint64_t sum_total = 0;
 BitVector *next_code(int infile, uint64_t bit_len) {
    BitVector *temp = bv_create(bit_len);
    int i;
    for(i = bit_len - 1; i >= 0; i--) {
       if(in_index == (total*8)) {
          total = read(infile, in_buffer, 4096);
+         sum_total += total;
          in_index = 0;
          if(total == 0) { 
             printf("next_code: No more bytes to read\n");
+            printf("Read %lu bytes in total\n", sum_total);
             in_index = 0;
             total = 0;
             return NULL;

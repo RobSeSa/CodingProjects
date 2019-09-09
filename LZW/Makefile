@@ -44,6 +44,7 @@ test:
 	./lzwcoder -v -c -i mytest.txt -o mytest.zipped
 	./lzwcoder -v -d -i mytest.zipped -o mytest.unzipped
 	@diff mytest.txt mytest.unzipped -s
+	@cmp mytest.txt mytest.unzipped
 
 git-% :
 	git add ${SOURCES} ${HEADERS} Makefile
