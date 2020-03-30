@@ -29,7 +29,7 @@ fun initPrevious(numVertices : Int) : IntArray {
 }
 
 // initialize a matrix of distances to run Dijkstra's on
-fun randDistances(height : Int, width : Int) : Array<IntArray> {
+fun randDistances(height : Int, width : Int, max : Int) : Array<IntArray> {
     println("initDistances; height = $height, width = $width {")
     var matrix: Array<IntArray> = Array(height) { IntArray(width) }
     val rows = matrix.size
@@ -40,7 +40,7 @@ fun randDistances(height : Int, width : Int) : Array<IntArray> {
                 matrix[row][col] = 0
             }
             else {
-                matrix[row][col] = (1 .. 100).random()
+                matrix[row][col] = (1 .. max).random()
             }
         }
     }
@@ -213,14 +213,16 @@ fun printPaths(previous: IntArray, start: Int, end: Int) {
         print("$end <- ")
         printPaths(previous, start, previous[end])
     }
-    else { println("$start") }
+    else { println("$end <- $start") }
 }
 
 fun main(args: Array<String>) {
+    //hyper parameters
     val vertices = 8
+    val max = 1000
 
     //test initDistances
-    var matrix = randDistances(vertices, vertices)
+    var matrix = randDistances(vertices, vertices, max)
 
     //test printMatrix
     printMatrix(matrix)
